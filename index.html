@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Labor Hours Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                        info: '#3B82F6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sidebar { transition: all 0.3s ease; }
+        .sidebar.collapsed { width: 70px; }
+        .sidebar.collapsed .nav-text, .sidebar.collapsed .logo-text { display: none; }
+        .sidebar.collapsed .expand-icon { transform: rotate(180deg); }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #employeeTableBody tr { cursor: pointer; }
+        .sidebar a.active { color: #4F46E5; background-color: rgba(79, 70, 229, 0.1); }
+        html.dark .sidebar a.active { color: #818cf8; background-color: rgba(129, 140, 248, 0.1); }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 font-sans">
+    <!-- Login View -->
+    <div id="loginView" class="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div class="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
+            <div class="text-center">
+                <i class="fas fa-clock text-primary text-5xl mb-4"></i>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Welcome to LaborTrack</h2>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Sign in to continue</p>
+            </div>
+            <form id="loginForm" class="mt-8 space-y-6">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm" placeholder="Email address">
+                    </div>
+                    <div>
+                        <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm" placeholder="Password">
+                    </div>
+                </div>
+                <div id="authError" class="text-red-500 text-sm text-center hidden"></div>
+                <div>
+                    <button type="submit" id="loginButton" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        Sign in
+                    </button>
+                </div>
+            </form>
+            <div class="text-sm text-center">
+                <p class="text-gray-600 dark:text-gray-400">Don't have an account? 
+                    <a href="#" id="showSignUp" class="font-medium text-primary hover:text-indigo-500">Sign up</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- App View -->
+    <div id="appView" class="hidden h-screen overflow-hidden">
+        <div class="flex h-full">
+            <!-- Sidebar -->
+            <div class="sidebar bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow-lg flex flex-col w-64">
+                <div class="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center"><i class="fas fa-clock text-primary text-2xl mr-3"></i><span class="logo-text font-bold text-xl">LaborTrack</span></div>
+                    <button id="toggleSidebar" class="expand-icon text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform"><i class="fas fa-chevron-left"></i></button>
+                </div>
+                <div class="flex-1 overflow-y-auto py-4">
+                    <div class="px-4 mb-6">
+                        <h3 class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 mb-3">Main</h3>
+                        <ul id="main-nav">
+                            <li><a href="#" data-view="dashboardView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-tachometer-alt mr-3"></i><span class="nav-text">Dashboard</span></a></li>
+                            <li class="mt-2"><a href="#" data-view="employeeTableView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-users mr-3"></i><span class="nav-text">Employees</span></a></li>
+                            <li class="mt-2"><a href="#" data-view="reportsView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-file-alt mr-3"></i><span class="nav-text">Reports</span></a></li>
+                        </ul>
+                    </div>
+                    <div class="px-4 mb-6">
+                        <h3 class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 mb-3">Tools</h3>
+                        <ul>
+                            <li><label for="excel_file" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg cursor-pointer"><i class="fas fa-file-upload mr-3"></i><span class="nav-text">Upload Data</span></label><input type="file" id="excel_file" accept=".xlsx, .xls" class="hidden"></li>
+                            <li class="mt-2"><a href="#" data-view="settingsView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-cog mr-3"></i><span class="nav-text">Settings</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                         <div class="flex items-center">
+                            <img src="https://i.pravatar.cc/150?u=admin" alt="User" class="w-8 h-8 rounded-full">
+                            <div class="ml-3 nav-text">
+                                <p id="userEmail" class="text-sm font-medium truncate"></p>
+                            </div>
+                        </div>
+                        <button id="logoutButton" class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-indigo-400 nav-text"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div id="mainContent" class="flex-1 overflow-auto">
+                <header class="bg-white dark:bg-gray-800 shadow-sm"><div class="px-6 py-4 flex items-center justify-between"><h1 class="text-2xl font-bold text-gray-800 dark:text-white" id="pageTitle">Dashboard Overview</h1><div class="flex items-center space-x-4"><div class="relative"><input type="text" id="searchInput" placeholder="Search name, ID, or YYYY-MM-DD" class="pl-10 pr-4 py-2 border rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"><i class="fas fa-search absolute left-3 top-3 text-gray-400"></i></div><button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5"><svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg><svg id="theme-toggle-light-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg></button></div></div></header>
+                <main class="p-6">
+                    <!-- Dashboard View -->
+                    <div id="dashboardView" class="view-container fade-in">
+                        <div class="flex justify-end mb-4">
+                            <select id="monthSelector" class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"></select>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="totalEmployeesLabel" class="text-gray-500 dark:text-gray-400 text-sm">Total Employees</p><h3 id="totalEmployees" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div><div class="p-3 rounded-full bg-primary bg-opacity-10 text-primary"><i class="fas fa-users text-xl"></i></div></div></div>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="totalHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Total Hours</p><h3 id="totalHours" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div><div class="p-3 rounded-full bg-secondary bg-opacity-10 text-secondary"><i class="fas fa-clock text-xl"></i></div></div></div>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="totalBillableLabel" class="text-gray-500 dark:text-gray-400 text-sm">Total Billable</p><h3 id="totalBillable" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">$0</h3></div><div class="p-3 rounded-full bg-info bg-opacity-10 text-info"><i class="fas fa-dollar-sign text-xl"></i></div></div></div>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="overtimeHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Overtime Hours</p><h3 id="overtimeHours" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div><div class="p-3 rounded-full bg-danger bg-opacity-10 text-danger"><i class="fas fa-exclamation-triangle text-xl"></i></div></div></div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Daily Hours Trend</h3><div class="chart-container"><canvas id="monthlyTrendChart"></canvas></div></div>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                                <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Performance Indicators (Today vs Yesterday)</h3>
+                                <div id="performanceIndicators" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h4 class="font-medium text-green-800 dark:text-green-400">Overperforming</h4>
+                                        <ul id="overperformingList" class="mt-2 text-sm text-green-700 dark:text-green-300"></ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-red-800 dark:text-red-400">Underperforming</h4>
+                                        <ul id="underperformingList" class="mt-2 text-sm text-red-700 dark:text-red-300"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee Table View -->
+                    <div id="employeeTableView" class="view-container hidden fade-in"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><h3 id="employeeTableHeader" class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">All Employees</h3><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"><thead class="bg-gray-50 dark:bg-gray-700"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Employee</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Department</th><th id="employeeTableHoursHeader" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Hours</th><th id="employeeTableBillableHeader" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Billable</th></tr></thead><tbody id="employeeTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"></tbody></table></div></div></div>
+                    
+                    <!-- Employee Profile View -->
+                    <div id="employeeProfileView" class="view-container hidden fade-in">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center">
+                               <button id="backToEmployeeList" class="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i></button>
+                               <h2 id="employeeNameTitle" class="text-2xl font-bold text-gray-800 dark:text-white">Employee Profile</h2>
+                            </div>
+                            <select id="employeeMonthSelector" class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"></select>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="lg:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex flex-col items-center text-center"><img id="employeeProfilePic" src="https://i.pravatar.cc/150" alt="Employee" class="w-24 h-24 rounded-full mb-4"><h3 id="employeeProfileName" class="text-xl font-bold text-gray-800 dark:text-white">-</h3><p id="employeeProfileDept" class="text-gray-600 dark:text-gray-400 mb-4">-</p><div class="w-full border-t border-gray-200 dark:border-gray-700 pt-4 text-left text-sm"><div class="flex justify-between py-1"><span class="text-gray-500 dark:text-gray-400">Employee ID</span><span id="employeeProfileId" class="font-medium text-gray-900 dark:text-white">-</span></div><div class="flex justify-between py-1"><span class="text-gray-500 dark:text-gray-400">Email</span><span id="employeeProfileEmail" class="font-medium text-gray-900 dark:text-white">-</span></div></div></div></div>
+                            <div class="lg:col-span-2 space-y-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><p id="employeeHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Hours</p><h3 id="employeeHoursThisMonth" class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div>
+                                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><p id="employeeBillableLabel" class="text-gray-500 dark:text-gray-400 text-sm">Billable</p><h3 id="employeeBillableThisMonth" class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">$0</h3></div>
+                                </div>
+                                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Daily Hours</h3><div class="chart-container"><canvas id="dailyHoursChart"></canvas></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reports View -->
+                    <div id="reportsView" class="view-container hidden fade-in"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><h3 class="font-semibold text-lg text-gray-900 dark:text-white">Reports</h3><p class="text-gray-500 dark:text-gray-400 mt-2">This section is under construction.</p></div></div>
+                    
+                    <!-- Settings View -->
+                    <div id="settingsView" class="view-container hidden fade-in">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                            <h3 class="font-semibold text-lg text-gray-900 dark:text-white">Account Settings</h3>
+                            <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Last Sign-In: <span id="lastLoginTime" class="font-medium text-gray-800 dark:text-white"></span></p>
+                            </div>
+                            <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                                <h4 class="font-medium text-gray-800 dark:text-white">Change Password</h4>
+                                <form id="changePasswordForm" class="mt-4 space-y-4 max-w-sm">
+                                    <div>
+                                        <label for="newPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300">New Password</label>
+                                        <input type="password" id="newPassword" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm New Password</label>
+                                        <input type="password" id="confirmPassword" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-white">
+                                    </div>
+                                    <div id="passwordChangeStatus" class="text-sm text-center"></div>
+                                    <div>
+                                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                            Update Password
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script type="module">
+        // --- Firebase Imports ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4am309Xlaz7GWZlOzUK7cEN4NE26nBNA",
+            authDomain: "hermont-tire-labortrack-cloud.firebaseapp.com",
+            projectId: "hermont-tire-labortrack-cloud",
+            storageBucket: "hermont-tire-labortrack-cloud.appspot.com",
+            messagingSenderId: "448794791885",
+            appId: "1:448794791885:web:f10b9c1127d217f87abe84"
+        };
+
+        // --- Initialize Firebase ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const dataDocRef = doc(db, "sharedData", "main"); // Shared data location for all users
+
+        // --- GLOBAL STATE ---
+        let monthlyTrendChart, dailyHoursChart;
+        let processedData = {};
+        const views = document.querySelectorAll('.view-container');
+        const navLinks = document.querySelectorAll('#main-nav a, [data-view="settingsView"]');
+
+        // --- DATE HELPERS (UTC compliant) ---
+        const getStartOfWeek = (date) => {
+            const d = new Date(date);
+            d.setUTCHours(0, 0, 0, 0);
+            const day = d.getUTCDay();
+            const diff = d.getUTCDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setUTCDate(diff));
+        };
+
+        const getWeekId = (date) => {
+            if (!date || isNaN(new Date(date).getTime())) return null;
+            const startOfWeek = getStartOfWeek(date);
+            return startOfWeek.toISOString().split('T')[0];
+        };
+        
+        const getMonthId = (date) => {
+            if (!date || isNaN(new Date(date).getTime())) return null;
+            const d = new Date(date);
+            return d.toISOString().slice(0, 7);
+        };
+
+        // --- CORE LOGIC ---
+        document.getElementById('excel_file').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const newRawData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    if (newRawData.length === 0) throw new Error("Excel file is empty.");
+                    
+                    const docSnap = await getDoc(dataDocRef);
+                    const existingData = docSnap.exists() ? docSnap.data() : null;
+
+                    processedData = processRawData(newRawData, existingData);
+                    await setDoc(dataDocRef, processedData);
+                    populateMonthSelector(processedData.monthIds);
+                    updateDashboard(processedData.thisMonthId);
+                    showView('dashboardView');
+                    alert("Dashboard updated successfully!");
+                } catch (error) {
+                    console.error("Error processing Excel file:", error);
+                    alert(`Error processing file: ${error.message}`);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function processRawData(newData, existingData) {
+            const firstRow = newData[0];
+            if (!firstRow) throw new Error("New Excel data is empty.");
+
+            const requiredColumns = ['Employee ID', 'Employee', 'Email', 'Department', 'Date', 'Labor Hours', 'Billable Amount'];
+            const actualColumns = Object.keys(firstRow);
+            
+            const columnMap = {};
+            const lowerCaseActualColumns = actualColumns.map(c => c.toLowerCase().trim());
+
+            for (const requiredCol of requiredColumns) {
+                const lowerCaseRequired = requiredCol.toLowerCase().trim();
+                const index = lowerCaseActualColumns.indexOf(lowerCaseRequired);
+                if (index === -1) throw new Error(`Missing required column: "${requiredCol}"`);
+                columnMap[requiredCol] = actualColumns[index];
+            }
+
+            const employeeData = existingData ? existingData.employees.reduce((acc, emp) => {
+                acc[emp.id] = emp;
+                return acc;
+            }, {}) : {};
+
+            newData.forEach(row => {
+                const id = row[columnMap['Employee ID']];
+                if (!id) return;
+
+                if (!employeeData[id]) {
+                    employeeData[id] = { id: id, name: row[columnMap['Employee']], email: row[columnMap['Email']], department: row[columnMap['Department']], daily: [] };
+                }
+                
+                let date;
+                const dateValue = row[columnMap['Date']];
+                if (typeof dateValue === 'number') {
+                    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+                    date = new Date(excelEpoch.getTime() + dateValue * 86400000);
+                } else {
+                    date = new Date(String(dateValue).split(' ')[0] + 'T00:00:00Z');
+                }
+                
+                if (isNaN(date.getTime())) return;
+
+                const newEntry = {
+                    date: date.toISOString().split('T')[0],
+                    hours: Number(row[columnMap['Labor Hours']]) || 0,
+                    billable: Number(row[columnMap['Billable Amount']]) || 0
+                };
+
+                const existingEntryIndex = employeeData[id].daily.findIndex(d => d.date === newEntry.date);
+                if (existingEntryIndex !== -1) {
+                    employeeData[id].daily[existingEntryIndex] = newEntry;
+                } else {
+                    employeeData[id].daily.push(newEntry);
+                }
+            });
+            
+            const allDates = Object.values(employeeData).flatMap(emp => emp.daily.map(d => new Date(d.date)));
+            const weekIds = [...new Set(allDates.map(d => getWeekId(d)))].filter(Boolean).sort().reverse();
+            const monthIds = [...new Set(allDates.map(d => getMonthId(d)))].filter(Boolean).sort().reverse();
+
+            return { employees: Object.values(employeeData), thisWeekId: weekIds[0], lastWeekId: weekIds[1] || null, thisMonthId: monthIds[0], monthIds };
+        }
+
+        function updateDashboard(monthId) {
+            if (!monthId || !processedData.employees) {
+                // Clear dashboard view if no data
+                document.getElementById('totalEmployees').textContent = '0';
+                document.getElementById('totalHours').textContent = '0';
+                document.getElementById('totalBillable').textContent = '$0';
+                document.getElementById('overtimeHours').textContent = '0';
+                document.getElementById('totalHoursLabel').textContent = 'Total Hours';
+                document.getElementById('totalBillableLabel').textContent = 'Total Billable';
+                document.getElementById('overtimeHoursLabel').textContent = 'Overtime Hours';
+                document.getElementById('employeeTableBody').innerHTML = '';
+                if (monthlyTrendChart) {
+                    monthlyTrendChart.data.labels = [];
+                    monthlyTrendChart.data.datasets[0].data = [];
+                    monthlyTrendChart.update();
+                }
+                return;
+            }
+
+            const { employees } = processedData;
+            const monthName = new Date(monthId + '-02T00:00:00Z').toLocaleString('default', { month: 'long', year: 'numeric' });
+            
+            document.getElementById('totalHoursLabel').textContent = `Total Hours (${monthName})`;
+            document.getElementById('totalBillableLabel').textContent = `Total Billable (${monthName})`;
+            document.getElementById('overtimeHoursLabel').textContent = `Overtime Hours (${monthName})`;
+            document.getElementById('employeeTableHeader').textContent = `All Employees (${monthName})`;
+            document.getElementById('employeeTableHoursHeader').textContent = `Hours (${monthName})`;
+            document.getElementById('employeeTableBillableHeader').textContent = `Billable (${monthName})`;
+
+            const monthData = employees.map(emp => {
+                const monthEntries = emp.daily.filter(d => getMonthId(d.date) === monthId);
+                return {
+                    ...emp,
+                    totalHours: monthEntries.reduce((sum, d) => sum + d.hours, 0),
+                    totalBillable: monthEntries.reduce((sum, d) => sum + d.billable, 0)
+                };
+            });
+
+            const totalHours = monthData.reduce((sum, emp) => sum + emp.totalHours, 0);
+            const totalBillable = monthData.reduce((sum, emp) => sum + emp.totalBillable, 0);
+            const overtimeHours = monthData.reduce((sum, emp) => sum + (emp.totalHours > 160 ? emp.totalHours - 160 : 0), 0);
+            
+            document.getElementById('totalEmployees').textContent = employees.length;
+            document.getElementById('totalHours').textContent = totalHours.toFixed(1);
+            document.getElementById('totalBillable').textContent = `$${totalBillable.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('overtimeHours').textContent = overtimeHours.toFixed(1);
+
+            populateEmployeeTable(monthData);
+            updateMainCharts({ employees, thisMonthId: monthId });
+        }
+        
+        function populateEmployeeTable(data) {
+            const tableBody = document.getElementById('employeeTableBody');
+            tableBody.innerHTML = '';
+            data.forEach(emp => {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-employee-id', emp.id);
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-gray-900 dark:text-white">${emp.name}</div><div class="text-sm text-gray-500 dark:text-gray-400">${emp.email}</div></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">${emp.department}</div></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">${emp.totalHours.toFixed(1)}</div></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">$${emp.totalBillable.toLocaleString(undefined, {minimumFractionDigits: 2})}</div></td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function updateMainCharts({ employees, thisMonthId }) {
+            // Performance Indicators
+            const overperformingList = document.getElementById('overperformingList');
+            const underperformingList = document.getElementById('underperformingList');
+            overperformingList.innerHTML = '';
+            underperformingList.innerHTML = '';
+
+            const allDates = employees.flatMap(emp => emp.daily.map(d => d.date)).sort();
+            const latestDateStr = allDates[allDates.length - 1];
+            
+            if (latestDateStr) {
+                const latestDate = new Date(latestDateStr + 'T00:00:00Z');
+                const dayBefore = new Date(latestDate);
+                dayBefore.setUTCDate(latestDate.getUTCDate() - 1);
+                const dayBeforeStr = dayBefore.toISOString().split('T')[0];
+
+                employees.forEach(emp => {
+                    const todayEntry = emp.daily.find(d => d.date === latestDateStr);
+                    const yesterdayEntry = emp.daily.find(d => d.date === dayBeforeStr);
+
+                    const todayHours = todayEntry ? todayEntry.hours : 0;
+                    const yesterdayHours = yesterdayEntry ? yesterdayEntry.hours : 0;
+                    
+                    if (yesterdayHours > 0) {
+                        const change = ((todayHours - yesterdayHours) / yesterdayHours) * 100;
+                        const li = document.createElement('li');
+                        li.textContent = `${emp.name} (${change.toFixed(1)}%)`;
+                        if (change > 10) {
+                            overperformingList.appendChild(li);
+                        } else if (change < -10) {
+                            underperformingList.appendChild(li);
+                        }
+                    }
+                });
+            }
+
+            // Monthly Trend Chart
+            const monthlyTotals = {};
+            employees.forEach(emp => {
+                emp.daily.forEach(day => {
+                    if (getMonthId(day.date) === thisMonthId) {
+                        if (!monthlyTotals[day.date]) monthlyTotals[day.date] = 0;
+                        monthlyTotals[day.date] += day.hours;
+                    }
+                });
+            });
+
+            const sortedDates = Object.keys(monthlyTotals).sort();
+            monthlyTrendChart.data.labels = sortedDates;
+            monthlyTrendChart.data.datasets[0].data = sortedDates.map(date => monthlyTotals[date]);
+            monthlyTrendChart.update();
+        }
+
+        function showEmployeeProfile(employeeId, monthId) {
+            const employee = processedData.employees.find(emp => emp.id == employeeId);
+            if (!employee) return;
+
+            const employeeMonthIds = [...new Set(employee.daily.map(d => getMonthId(d.date)))].filter(Boolean).sort().reverse();
+            const selector = document.getElementById('employeeMonthSelector');
+            selector.innerHTML = '';
+            employeeMonthIds.forEach(id => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = new Date(id + '-02T00:00:00Z').toLocaleString('default', { month: 'long', year: 'numeric' });
+                selector.appendChild(option);
+            });
+            selector.value = monthId;
+            
+            document.getElementById('employeeProfileView').dataset.currentEmployeeId = employeeId;
+
+            updateEmployeeProfileView(employee, monthId);
+            
+            showView('employeeProfileView');
+        }
+        
+        function updateEmployeeProfileView(employee, monthId) {
+            const monthName = new Date(monthId + '-02T00:00:00Z').toLocaleString('default', { month: 'long', year: 'numeric' });
+            document.getElementById('employeeHoursLabel').textContent = `Hours (${monthName})`;
+            document.getElementById('employeeBillableLabel').textContent = `Billable (${monthName})`;
+
+            const monthEntries = employee.daily.filter(d => getMonthId(d.date) === monthId);
+            const monthHours = monthEntries.reduce((sum, d) => sum + d.hours, 0);
+            const monthBillable = monthEntries.reduce((sum, d) => sum + d.billable, 0);
+
+            document.getElementById('employeeNameTitle').textContent = `${employee.name}'s Profile`;
+            document.getElementById('employeeProfilePic').src = `https://i.pravatar.cc/150?u=${employee.email}`;
+            document.getElementById('employeeProfileName').textContent = employee.name;
+            document.getElementById('employeeProfileDept').textContent = employee.department;
+            document.getElementById('employeeProfileId').textContent = employee.id;
+            document.getElementById('employeeProfileEmail').textContent = employee.email;
+            document.getElementById('employeeHoursThisMonth').textContent = monthHours.toFixed(1);
+            document.getElementById('employeeBillableThisMonth').textContent = `$${monthBillable.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+            const year = parseInt(monthId.split('-')[0]);
+            const month = parseInt(monthId.split('-')[1]) - 1;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const labels = [];
+            const data = Array(daysInMonth).fill(0);
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                labels.push(new Date(Date.UTC(year, month, i)));
+            }
+
+            monthEntries.forEach(d => {
+                const dayOfMonth = new Date(d.date + 'T00:00:00Z').getUTCDate();
+                data[dayOfMonth - 1] = d.hours;
+            });
+
+            dailyHoursChart.data.labels = labels;
+            dailyHoursChart.data.datasets[0].data = data;
+            dailyHoursChart.update();
+        }
+        
+        function populateMonthSelector(monthIds) {
+            const selector = document.getElementById('monthSelector');
+            selector.innerHTML = '';
+            if (!monthIds || monthIds.length === 0) return;
+            monthIds.forEach(monthId => {
+                const option = document.createElement('option');
+                option.value = monthId;
+                option.textContent = new Date(monthId + '-02T00:00:00Z').toLocaleString('default', { month: 'long', year: 'numeric' });
+                selector.appendChild(option);
+            });
+        }
+
+        function showView(viewId) {
+            const pageTitles = { dashboardView: 'Dashboard Overview', employeeTableView: 'Employees', employeeProfileView: 'Employee Profile', reportsView: 'Reports', settingsView: 'Settings' };
+            document.getElementById('pageTitle').textContent = pageTitles[viewId] || 'Dashboard';
+            views.forEach(view => view.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+            navLinks.forEach(link => link.classList.toggle('active', link.dataset.view === viewId));
+        }
+
+        // --- UI INITIALIZATION & EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', async function() {
+            const chartOptions = { responsive: true, maintainAspectRatio: false };
+            const timeScaleOptions = { ...chartOptions, scales: { x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MMM d' } } } };
+            
+            monthlyTrendChart = new Chart(document.getElementById('monthlyTrendChart').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: 'Total Hours', data: [], borderColor: '#4F46E5', tension: 0.1 }] }, options: timeScaleOptions });
+            dailyHoursChart = new Chart(document.getElementById('dailyHoursChart').getContext('2d'), { type: 'bar', data: { labels: [], datasets: [{ label: 'Labor Hours', data: [], backgroundColor: '#4F46E5', borderRadius: 4 }] }, options: timeScaleOptions });
+
+            document.getElementById('toggleSidebar').addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('collapsed'));
+            navLinks.forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); if (link.dataset.view) showView(link.dataset.view); }));
+            document.getElementById('backToEmployeeList').addEventListener('click', () => showView('employeeTableView'));
+            document.getElementById('employeeTableBody').addEventListener('click', (e) => { 
+                const row = e.target.closest('tr'); 
+                if (row && row.dataset.employeeId) {
+                    const selectedMonth = document.getElementById('monthSelector').value;
+                    showEmployeeProfile(row.dataset.employeeId, selectedMonth);
+                }
+            });
+            
+            document.getElementById('searchInput').addEventListener('keyup', (e) => {
+                if (!processedData.employees) return;
+                
+                showView('employeeTableView');
+                
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+                if (dateRegex.test(searchTerm)) {
+                    const date = searchTerm;
+                    document.getElementById('employeeTableHeader').textContent = `Employee Stats for ${date}`;
+                    document.getElementById('employeeTableHoursHeader').textContent = `Hours (${date})`;
+                    document.getElementById('employeeTableBillableHeader').textContent = `Billable (${date})`;
+
+                    const dailyData = processedData.employees.map(emp => {
+                        const dayEntry = emp.daily.find(d => d.date === date);
+                        return {
+                            ...emp,
+                            totalHours: dayEntry ? dayEntry.hours : 0,
+                            totalBillable: dayEntry ? dayEntry.billable : 0
+                        };
+                    });
+                    populateEmployeeTable(dailyData);
+                } else {
+                    const selectedMonth = document.getElementById('monthSelector').value;
+                    const monthName = new Date(selectedMonth + '-02T00:00:00Z').toLocaleString('default', { month: 'long', year: 'numeric' });
+                    
+                    document.getElementById('employeeTableHeader').textContent = `All Employees (${monthName})`;
+                    document.getElementById('employeeTableHoursHeader').textContent = `Hours (${monthName})`;
+                    document.getElementById('employeeTableBillableHeader').textContent = `Billable (${monthName})`;
+
+                    const filteredData = processedData.employees.filter(emp =>
+                        emp.name.toLowerCase().includes(searchTerm) ||
+                        String(emp.id).toLowerCase().includes(searchTerm) ||
+                        emp.department.toLowerCase().includes(searchTerm)
+                    );
+
+                    const monthData = filteredData.map(emp => {
+                        const monthEntries = emp.daily.filter(d => getMonthId(d.date) === selectedMonth);
+                        return {
+                            ...emp,
+                            totalHours: monthEntries.reduce((s, d) => s + d.hours, 0),
+                            totalBillable: monthEntries.reduce((s, d) => s + d.billable, 0)
+                        };
+                    });
+                    populateEmployeeTable(monthData);
+                }
+            });
+
+            document.getElementById('monthSelector').addEventListener('change', (e) => updateDashboard(e.target.value));
+            document.getElementById('employeeMonthSelector').addEventListener('change', (e) => {
+                const employeeId = document.getElementById('employeeProfileView').dataset.currentEmployeeId;
+                const employee = processedData.employees.find(emp => emp.id == employeeId);
+                if (employee) {
+                    updateEmployeeProfileView(employee, e.target.value);
+                }
+            });
+            
+            document.getElementById('changePasswordForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const statusEl = document.getElementById('passwordChangeStatus');
+
+                if (newPassword !== confirmPassword) {
+                    statusEl.textContent = "Passwords do not match.";
+                    statusEl.className = "text-sm text-center text-red-500";
+                    return;
+                }
+                
+                updatePassword(auth.currentUser, newPassword).then(() => {
+                    statusEl.textContent = "Password updated successfully!";
+                    statusEl.className = "text-sm text-center text-green-500";
+                    document.getElementById('changePasswordForm').reset();
+                }).catch((error) => {
+                    statusEl.textContent = `Error: ${error.message}`;
+                    statusEl.className = "text-sm text-center text-red-500";
+                });
+            });
+
+            // --- THEME TOGGLE LOGIC ---
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            const themeToggleButton = document.getElementById('theme-toggle');
+
+            const setTheme = (isDark) => {
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    themeToggleLightIcon.classList.remove('hidden');
+                    themeToggleDarkIcon.classList.add('hidden');
+                    localStorage.setItem('color-theme', 'dark');
+                    Chart.defaults.borderColor = 'rgba(107, 114, 128, 0.5)';
+                    Chart.defaults.color = '#d1d5db';
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeToggleLightIcon.classList.add('hidden');
+                    themeToggleDarkIcon.classList.remove('hidden');
+                    localStorage.setItem('color-theme', 'light');
+                    Chart.defaults.borderColor = 'rgba(229, 231, 235, 1)';
+                    Chart.defaults.color = '#6b7280';
+                }
+                if (monthlyTrendChart) {
+                    monthlyTrendChart.update();
+                    dailyHoursChart.update();
+                }
+            };
+
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                setTheme(true);
+            } else {
+                setTheme(false);
+            }
+
+            themeToggleButton.addEventListener('click', () => {
+                setTheme(!document.documentElement.classList.contains('dark'));
+            });
+
+            // --- AUTHENTICATION LOGIC ---
+            const loginView = document.getElementById('loginView');
+            const appView = document.getElementById('appView');
+            const loginForm = document.getElementById('loginForm');
+            const loginButton = document.getElementById('loginButton');
+            const showSignUp = document.getElementById('showSignUp');
+            const authError = document.getElementById('authError');
+            const logoutButton = document.getElementById('logoutButton');
+
+            let isSignUp = false;
+
+            showSignUp.addEventListener('click', (e) => {
+                e.preventDefault();
+                isSignUp = !isSignUp;
+                loginButton.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+                document.querySelector('#loginView h2').textContent = isSignUp ? 'Create an Account' : 'Welcome to LaborTrack';
+                document.querySelector('#loginView p').textContent = isSignUp ? 'Fill out the form to get started' : 'Sign in to continue';
+                showSignUp.textContent = isSignUp ? 'Back to Sign In' : 'Sign Up';
+            });
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = loginForm.email.value;
+                const password = loginForm.password.value;
+                authError.classList.add('hidden');
+
+                if (isSignUp) {
+                    createUserWithEmailAndPassword(auth, email, password)
+                        .catch(error => {
+                            authError.textContent = error.message;
+                            authError.classList.remove('hidden');
+                        });
+                } else {
+                    signInWithEmailAndPassword(auth, email, password)
+                        .catch(error => {
+                            authError.textContent = error.message;
+                            authError.classList.remove('hidden');
+                        });
+                }
+            });
+            
+            logoutButton.addEventListener('click', () => {
+                signOut(auth);
+            });
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    // User is signed in
+                    loginView.classList.add('hidden');
+                    appView.classList.remove('hidden');
+                    document.getElementById('userEmail').textContent = user.email;
+                    document.getElementById('lastLoginTime').textContent = new Date(user.metadata.lastSignInTime).toLocaleString();
+                    
+                    try {
+                        const docSnap = await getDoc(dataDocRef);
+                        if (docSnap.exists()) {
+                            processedData = docSnap.data();
+                            if (processedData && processedData.employees) {
+                               if (!processedData.monthIds) {
+                                   const allDates = processedData.employees.flatMap(emp => emp.daily.map(d => new Date(d.date)));
+                                   processedData.monthIds = [...new Set(allDates.map(d => getMonthId(d)))].filter(Boolean).sort().reverse();
+                                   processedData.thisMonthId = processedData.monthIds[0];
+                               }
+                               populateMonthSelector(processedData.monthIds);
+                               updateDashboard(processedData.thisMonthId);
+                            }
+                        }
+                    } catch(e) {
+                        console.error("Could not load data from Firestore:", e);
+                        alert("Could not load cloud data. Please check your connection and Firebase setup.");
+                    }
+                    showView('dashboardView');
+                } else {
+                    // User is signed out
+                    loginView.classList.remove('hidden');
+                    appView.classList.add('hidden');
+                    processedData = {};
+                    updateDashboard(null); // Clear dashboard
+                }
+            });
+        });
+    </script>
+</body>
+</html>
