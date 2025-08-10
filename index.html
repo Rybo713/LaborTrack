@@ -85,7 +85,6 @@
                         <ul id="main-nav">
                             <li><a href="#" data-view="dashboardView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-tachometer-alt mr-3"></i><span class="nav-text">Dashboard</span></a></li>
                             <li class="mt-2"><a href="#" data-view="employeeTableView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-users mr-3"></i><span class="nav-text">Employees</span></a></li>
-                            <li class="mt-2"><a href="#" data-view="reportsView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-file-alt mr-3"></i><span class="nav-text">Reports</span></a></li>
                         </ul>
                     </div>
                     <div class="px-4 mb-6">
@@ -157,9 +156,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Reports View -->
-                    <div id="reportsView" class="view-container hidden fade-in"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><h3 class="font-semibold text-lg text-gray-900 dark:text-white">Reports</h3><p class="text-gray-500 dark:text-gray-400 mt-2">This section is under construction.</p></div></div>
                     
                     <!-- Settings View -->
                     <div id="settingsView" class="view-container hidden fade-in">
@@ -167,7 +163,7 @@
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-white">Account Settings</h3>
                             <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Last Sign-In: <span id="lastLoginTime" class="font-medium text-gray-800 dark:text-white"></span></p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.0</span></p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.1</span></p>
                             </div>
                             <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <h4 class="font-medium text-gray-800 dark:text-white">Change Password</h4>
@@ -383,9 +379,9 @@
             const overtimeHours = monthData.reduce((sum, emp) => sum + (emp.totalHours > 160 ? emp.totalHours - 160 : 0), 0);
             
             document.getElementById('totalEmployees').textContent = employees.length;
-            document.getElementById('totalHours').textContent = totalHours.toFixed(1);
+            document.getElementById('totalHours').textContent = totalHours.toFixed(2);
             document.getElementById('totalBillable').textContent = `$${totalBillable.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            document.getElementById('overtimeHours').textContent = overtimeHours.toFixed(1);
+            document.getElementById('overtimeHours').textContent = overtimeHours.toFixed(2);
 
             populateEmployeeTable(monthData);
             updateMainCharts({ employees, thisMonthId: monthId });
@@ -400,7 +396,7 @@
                 tr.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-gray-900 dark:text-white">${emp.name}</div><div class="text-sm text-gray-500 dark:text-gray-400">${emp.email}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">${emp.department}</div></td>
-                    <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">${emp.totalHours.toFixed(1)}</div></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">${emp.totalHours.toFixed(2)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">$${emp.totalBillable.toLocaleString(undefined, {minimumFractionDigits: 2})}</div></td>
                 `;
                 tableBody.appendChild(tr);
@@ -438,7 +434,7 @@
                         const li = document.createElement('li');
                         li.className = 'flex justify-between items-center text-sm';
                         const hoursColorClass = emp.hours < 8 ? 'text-red-500' : 'text-primary dark:text-indigo-400';
-                        li.innerHTML = `<span class="text-gray-800 dark:text-gray-200">${emp.name}</span><span class="font-bold ${hoursColorClass}">${emp.hours.toFixed(1)} hrs</span>`;
+                        li.innerHTML = `<span class="text-gray-800 dark:text-gray-200">${emp.name}</span><span class="font-bold ${hoursColorClass}">${emp.hours.toFixed(2)} hrs</span>`;
                         leaderboardList.appendChild(li);
                     });
                 }
@@ -504,7 +500,7 @@
             document.getElementById('employeeProfileDept').textContent = employee.department;
             document.getElementById('employeeProfileId').textContent = employee.id;
             document.getElementById('employeeProfileEmail').textContent = employee.email;
-            document.getElementById('employeeHoursThisMonth').textContent = monthHours.toFixed(1);
+            document.getElementById('employeeHoursThisMonth').textContent = monthHours.toFixed(2);
             document.getElementById('employeeBillableThisMonth').textContent = `$${monthBillable.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
             const year = parseInt(monthId.split('-')[0]);
