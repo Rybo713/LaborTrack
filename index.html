@@ -25,6 +25,10 @@
         }
     </script>
     <style>
+        body {
+            /* Using Tailwind's bg-gray-100 dark:bg-gray-900 instead of padding */
+        	font-family: -apple-system, BlinkMacSystemFont, "Arial", sans-serif;
+        }
         .sidebar { transition: all 0.3s ease; }
         .sidebar.collapsed { width: 70px; }
         .sidebar.collapsed .nav-text, .sidebar.collapsed .logo-text { display: none; }
@@ -95,6 +99,7 @@
                         <ul id="main-nav">
                             <li><a href="#" data-view="dashboardView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-tachometer-alt mr-3"></i><span class="nav-text">Dashboard</span></a></li>
                             <li class="mt-2"><a href="#" data-view="employeeTableView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-users mr-3"></i><span class="nav-text">Employees</span></a></li>
+                            <li class="mt-2"><a href="#" data-view="reportsView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-chart-pie mr-3"></i><span class="nav-text">Reports</span></a></li>
                         </ul>
                     </div>
                     <div class="px-4 mb-6">
@@ -183,11 +188,33 @@
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div class="lg:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex flex-col items-center text-center"><h3 id="employeeProfileName" class="text-xl font-bold text-gray-800 dark:text-white">-</h3><p id="employeeProfileDept" class="text-gray-600 dark:text-gray-400 mb-4">-</p><div class="w-full border-t border-gray-200 dark:border-gray-700 pt-4 text-left text-sm"><div class="flex justify-between py-1"><span class="text-gray-500 dark:text-gray-400">Employee ID</span><span id="employeeProfileId" class="font-medium text-gray-900 dark:text-white">-</span></div><div class="flex justify-between py-1"><span class="text-gray-500 dark:text-gray-400">Email</span><span id="employeeProfileEmail" class="font-medium text-gray-900 dark:text-white">-</span></div></div></div></div>
                             <div class="lg:col-span-2 space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><p id="employeeHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Hours</p><h3 id="employeeHoursThisMonth" class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div>
                                     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><p id="employeeBillableLabel" class="text-gray-500 dark:text-gray-400 text-sm">Billable</p><h3 id="employeeBillableThisMonth" class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">$0</h3></div>
+                                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><p id="employeeAvgHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Avg Daily Hours</p><h3 id="employeeAvgHoursThisMonth" class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div>
                                 </div>
                                 <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Daily Hours</h3><div class="chart-container"><canvas id="dailyHoursChart"></canvas></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reports View -->
+                    <div id="reportsView" class="view-container hidden fade-in">
+                        <div class="space-y-8">
+                            <!-- Monthly Report -->
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                                <h3 class="font-semibold text-lg text-gray-900 dark:text-white mb-4">Monthly Average Hours Report</h3>
+                                <div id="monthlyReportContainer">
+                                    <p class="text-gray-500 dark:text-gray-400">Please select a month from the dashboard and ensure all days are imported to generate this report.</p>
+                                </div>
+                            </div>
+
+                            <!-- Bi-Weekly Report -->
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                                <h3 class="font-semibold text-lg text-gray-900 dark:text-white mb-4">Bi-Weekly Average Hours Report</h3>
+                                <div id="biWeeklyReportContainer">
+                                    <p class="text-gray-500 dark:text-gray-400">This report shows the average daily hours for each employee over two-week periods.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -198,7 +225,7 @@
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-white">Account Settings</h3>
                             <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Last Sign-In: <span id="lastLoginTime" class="font-medium text-gray-800 dark:text-white"></span></p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.3</span></p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.4</span></p>
                             </div>
                             <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <h4 class="font-medium text-gray-800 dark:text-white">Change Password</h4>
@@ -740,10 +767,13 @@
             const monthName = new Date(monthId + '-02T00:00:00Z').toLocaleString('default', { month: 'long', year: 'numeric' });
             document.getElementById('employeeHoursLabel').textContent = `Hours (${monthName})`;
             document.getElementById('employeeBillableLabel').textContent = `Billable (${monthName})`;
+            document.getElementById('employeeAvgHoursLabel').textContent = `Avg Daily Hours (${monthName})`;
 
             const monthEntries = employee.daily.filter(d => getMonthId(d.date) === monthId);
             const monthHours = monthEntries.reduce((sum, d) => sum + d.hours, 0);
             const monthBillable = monthEntries.reduce((sum, d) => sum + d.billable, 0);
+            const daysWithHours = monthEntries.filter(d => d.hours > 0).length;
+            const avgHours = daysWithHours > 0 ? (monthHours / daysWithHours) : 0;
 
             document.getElementById('employeeNameTitle').textContent = `${employee.name}'s Profile`;
             document.getElementById('employeeProfileName').textContent = employee.name;
@@ -752,6 +782,8 @@
             document.getElementById('employeeProfileEmail').textContent = employee.email;
             document.getElementById('employeeHoursThisMonth').textContent = monthHours.toFixed(2);
             document.getElementById('employeeBillableThisMonth').textContent = `$${monthBillable.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('employeeAvgHoursThisMonth').textContent = avgHours.toFixed(2);
+
 
             const year = parseInt(monthId.split('-')[0]);
             const month = parseInt(monthId.split('-')[1]) - 1;
@@ -772,6 +804,122 @@
             dailyHoursChart.data.datasets[0].data = data;
             dailyHoursChart.update();
         }
+        
+        function generateReports() {
+            const monthId = document.getElementById('monthSelector').value;
+            if (!monthId || !processedData.employees) {
+                return;
+            }
+
+            const year = parseInt(monthId.split('-')[0]);
+            const month = parseInt(monthId.split('-')[1]) - 1;
+            const monthName = new Date(year, month).toLocaleString('default', { month: 'short' });
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Monthly Report
+            const monthlyReportContainer = document.getElementById('monthlyReportContainer');
+            const lastDayOfMonth = new Date(Date.UTC(year, month, daysInMonth)).toISOString().split('T')[0];
+
+            const allDatesForMonth = new Set(
+                processedData.employees.flatMap(emp => 
+                    emp.daily.filter(d => getMonthId(d.date) === monthId).map(d => d.date)
+                )
+            );
+
+            if (allDatesForMonth.has(lastDayOfMonth)) {
+                let tableHtml = `
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Employee</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Avg Daily Hours</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                `;
+                processedData.employees.forEach(emp => {
+                    const monthEntries = emp.daily.filter(d => getMonthId(d.date) === monthId);
+                    const monthHours = monthEntries.reduce((sum, d) => sum + d.hours, 0);
+                    const daysWithHours = monthEntries.filter(d => d.hours > 0).length;
+                    const avgHours = daysWithHours > 0 ? (monthHours / daysWithHours) : 0;
+                    tableHtml += `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${emp.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${avgHours.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+                tableHtml += `</tbody></table>`;
+                monthlyReportContainer.innerHTML = tableHtml;
+            } else {
+                monthlyReportContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400">The report for ${new Date(monthId + '-02T00:00:00Z').toLocaleString('default', { month: 'long', year: 'numeric' })} will be generated once data for the entire month has been imported.</p>`;
+            }
+
+            // Bi-Weekly Report based on 15/16 day periods
+            const biWeeklyReportContainer = document.getElementById('biWeeklyReportContainer');
+            const allMonthlyData = processedData.employees.flatMap(emp => 
+                emp.daily
+                   .filter(d => getMonthId(d.date) === monthId)
+                   .map(d => ({...d, employeeName: emp.name}))
+            ).sort((a,b) => new Date(a.date) - new Date(b.date));
+            
+            if(allMonthlyData.length > 0) {
+                const periodData = {};
+
+                allMonthlyData.forEach(entry => {
+                    const dayOfMonth = new Date(entry.date + 'T00:00:00Z').getUTCDate();
+                    const periodKey = dayOfMonth <= 15 ? 1 : 2;
+                    
+                    if (!periodData[periodKey]) {
+                        periodData[periodKey] = {};
+                    }
+                    if (!periodData[periodKey][entry.employeeName]) {
+                        periodData[periodKey][entry.employeeName] = { totalHours: 0, days: 0 };
+                    }
+                    if (entry.hours > 0) {
+                        periodData[periodKey][entry.employeeName].totalHours += entry.hours;
+                        periodData[periodKey][entry.employeeName].days += 1;
+                    }
+                });
+
+                let biWeeklyTableHtml = '';
+                const period1Label = `${monthName} 1 - ${monthName} 15`;
+                const period2Label = `${monthName} 16 - ${monthName} ${daysInMonth}`;
+
+                [ {label: period1Label, data: periodData[1]}, {label: period2Label, data: periodData[2]} ].forEach(period => {
+                    if (period.data) {
+                        biWeeklyTableHtml += `<h4 class="font-semibold text-md text-gray-800 dark:text-gray-200 mt-6 mb-2">${period.label}</h4>`;
+                        biWeeklyTableHtml += `
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Employee</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Avg Daily Hours</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        `;
+                        Object.keys(period.data).sort().forEach(employeeName => {
+                            const empData = period.data[employeeName];
+                            const avg = empData.days > 0 ? empData.totalHours / empData.days : 0;
+                            biWeeklyTableHtml += `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${employeeName}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${avg.toFixed(2)}</td>
+                                </tr>
+                            `;
+                        });
+                        biWeeklyTableHtml += `</tbody></table>`;
+                    }
+                });
+                
+                biWeeklyReportContainer.innerHTML = biWeeklyTableHtml || `<p class="text-gray-500 dark:text-gray-400">No data available for the selected month to generate bi-weekly reports.</p>`;
+
+            } else {
+                 biWeeklyReportContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No data available for the selected month to generate bi-weekly reports.</p>`;
+            }
+        }
+
 
         function populateMonthSelector(monthIds) {
             const selector = document.getElementById('monthSelector');
@@ -791,6 +939,10 @@
             views.forEach(view => view.classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
             navLinks.forEach(link => link.classList.toggle('active', link.dataset.view === viewId));
+
+            if(viewId === 'reportsView') {
+                generateReports();
+            }
         }
 
         // --- UI INITIALIZATION & EVENT LISTENERS ---
