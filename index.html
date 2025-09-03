@@ -49,6 +49,15 @@
         #uploadNotification {
             transition: opacity 0.3s, transform 0.3s;
         }
+        .kpi-time-btn.active {
+            background-color: #ffffff;
+            color: #4F46E5;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        html.dark .kpi-time-btn.active {
+            background-color: #374151; /* gray-700 */
+            color: #818cf8;
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 font-sans">
@@ -99,6 +108,7 @@
                         <ul id="main-nav">
                             <li><a href="#" data-view="dashboardView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-tachometer-alt mr-3"></i><span class="nav-text">Dashboard</span></a></li>
                             <li class="mt-2"><a href="#" data-view="employeeTableView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-users mr-3"></i><span class="nav-text">Employees</span></a></li>
+                            <li class="mt-2"><a href="#" data-view="performanceView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-bullseye mr-3"></i><span class="nav-text">Performance</span></a></li>
                             <li class="mt-2"><a href="#" data-view="reportsView" class="flex items-center px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-indigo-400 hover:bg-primary hover:bg-opacity-10 rounded-lg"><i class="fas fa-chart-pie mr-3"></i><span class="nav-text">Reports</span></a></li>
                         </ul>
                     </div>
@@ -198,6 +208,54 @@
                         </div>
                     </div>
 
+                    <!-- Performance View -->
+                    <div id="performanceView" class="view-container hidden fade-in">
+                        <div class="space-y-8">
+                             <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                                <h3 class="font-semibold text-lg text-gray-900 dark:text-white mb-4">Key Performance Indicator Framework</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead class="bg-gray-50 dark:bg-gray-700">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Key Accountability</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Performance Measure (KPI)</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Target</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Weight</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="kpiReferenceTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                                            <!-- KPI data will be injected here by JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                                <h3 class="font-semibold text-lg text-gray-900 dark:text-white mb-4">Employee Performance Analysis</h3>
+                                <div class="flex flex-wrap items-center gap-8 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                                    <div>
+                                        <label for="kpiEmployeeSelector" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Employee:</label>
+                                        <select id="kpiEmployeeSelector" class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white w-full max-w-xs"></select>
+                                    </div>
+                                    <div>
+                                        <label for="kpiMonthSelector" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Month:</label>
+                                        <select id="kpiMonthSelector" class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white w-full max-w-xs"></select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Frame:</label>
+                                        <div id="kpiTimeFrameSelector" class="flex items-center rounded-lg bg-gray-100 dark:bg-gray-900 p-1">
+                                            <button data-value="monthly" class="kpi-time-btn px-4 py-1.5 text-sm font-medium rounded-md">Monthly</button>
+                                            <button data-value="quarterly" class="kpi-time-btn px-4 py-1.5 text-sm font-medium rounded-md">Quarterly</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="employeeKpiContainer" class="space-y-4">
+                                     <p class="text-gray-500 dark:text-gray-400 text-center py-8">Select an employee to view their performance analysis.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Reports View -->
                     <div id="reportsView" class="view-container hidden fade-in">
                         <div class="space-y-8">
@@ -225,7 +283,7 @@
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-white">Account Settings</h3>
                             <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Last Sign-In: <span id="lastLoginTime" class="font-medium text-gray-800 dark:text-white"></span></p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.4</span></p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.5</span></p>
                             </div>
                             <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <h4 class="font-medium text-gray-800 dark:text-white">Change Password</h4>
@@ -327,13 +385,33 @@
         const employeeForm = document.getElementById('employeeForm');
         let notificationTimeout;
 
-        // --- UI NOTIFICATIONS ---
-        function showAlert(message, isError = false) {
-            // This is now just a wrapper for the new notification system for simplicity
-            showUploadNotification(message, isError);
-        }
+        // --- KPI Data ---
+        const kpis = [
+            { category: 'Vehicle Repair & Maintenance', measure: 'First-time fix rate', target: '≥ 90%', weight: '10%', key: 'fixRate' },
+            { category: 'Vehicle Repair & Maintenance', measure: 'Repair accuracy (low rework rate)', target: '≤ 5% rework', weight: '5%', key: 'reworkRate' },
+            { category: 'Vehicle Repair & Maintenance', measure: 'Jobs completed per shift', target: '4–6', weight: '5%', key: 'jobsPerShift' },
+            { category: 'Vehicle Repair & Maintenance', measure: 'Service completion time vs standard', target: 'Within 90% of labor guide times', weight: '5%', key: 'completionTime' },
+            { category: 'Vehicle Repair & Maintenance', measure: 'Billable hours per month', target: '≥ 140 hours', weight: '5%', key: 'billableHours' },
+            { category: 'Documentation & Reporting', measure: 'Accuracy of service documentation', target: '100% accuracy', weight: '5%', key: 'docAccuracy' },
+            { category: 'Documentation & Reporting', measure: 'Time to submit after job completion', target: 'Within 1 hour', weight: '5%', key: 'submitTime' },
+            { category: 'Equipment & Vehicle Management', measure: 'Tool/equipment loss or damage incidents', target: 'Zero', weight: '5%', key: 'toolLoss' },
+            { category: 'Equipment & Vehicle Management', measure: 'Compliance with equipment checks', target: '100%', weight: '5%', key: 'equipChecks' },
+            { category: 'Equipment & Vehicle Management', measure: 'Inventory restocking adherence', target: '95%+ inventory match', weight: '5%', key: 'inventoryMatch' },
+            { category: 'Time & Route Efficiency', measure: 'On-time arrival rate', target: '≥ 95%', weight: '5%', key: 'onTimeArrival' },
+            { category: 'Time & Route Efficiency', measure: 'Jobs completed within time windows', target: '≥ 90%', weight: '5%', key: 'jobsInWindow' },
+            { category: 'Time & Route Efficiency', measure: 'Travel time vs productive time', target: '< 30% travel time', weight: '5%', key: 'travelTime' },
+            { category: 'Parts Preparation & Packing', measure: 'Packing accuracy', target: '≥ 98%', weight: '5%', key: 'packingAccuracy' },
+            { category: 'Parts Preparation & Packing', measure: 'Job delay due to parts issues', target: '≤ 2 per month', weight: '5%', key: 'partsDelay' },
+            { category: 'Parts Preparation & Packing', measure: 'Time spent on parts prep', target: '≤ 15 minutes per job', weight: '5%', key: 'partsPrepTime' },
+            { category: 'Parts Preparation & Packing', measure: 'Adherence to parts checklist', target: '100%', weight: '5%', key: 'partsChecklist' },
+            { category: 'Technical Growth', measure: 'Training hours completed', target: '≥ 8 hours/quarter', weight: '5%', key: 'trainingHours' },
+            { category: 'Technical Growth', measure: 'Certifications maintained', target: 'All required + 1', weight: '5%', key: 'certifications' },
+            { category: 'Sales & Upselling', measure: 'Additional revenue per visit', target: 'Company-specific target', weight: '5%', key: 'upsellRevenue' },
+            { category: 'Sales & Upselling', measure: 'Conversion rate on recommended services', target: '≥ 30%', weight: '5%', key: 'upsellConversion' }
+        ];
 
-        function showUploadNotification(message, isError = false) {
+        // --- UI NOTIFICATIONS ---
+        function showUploadNotification(message, isError = false, isWarning = false) {
             const notification = document.getElementById('uploadNotification');
             const messageEl = document.getElementById('uploadNotificationMessage');
 
@@ -341,18 +419,23 @@
 
             messageEl.textContent = message;
 
-            notification.classList.remove('bg-green-500', 'bg-red-500', 'hidden', 'opacity-0');
-            notification.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+            notification.classList.remove('bg-green-500', 'bg-red-500', 'bg-yellow-500', 'hidden', 'opacity-0');
+            
+            let bgColor = 'bg-green-500';
+            if (isError) bgColor = 'bg-red-500';
+            if (isWarning) bgColor = 'bg-yellow-500'; // Using Tailwind's yellow for warnings
+            notification.classList.add(bgColor);
             
             // Force reflow to restart animation
             void notification.offsetWidth; 
             
             notification.classList.add('opacity-100');
 
+            const duration = isWarning ? 8000 : 5000; // Longer duration for warnings
             notificationTimeout = setTimeout(() => {
                 notification.classList.remove('opacity-100');
                 setTimeout(() => notification.classList.add('hidden'), 300); // Hide after transition
-            }, 5000);
+            }, duration);
         }
         
         // --- DATE HELPERS (UTC compliant) ---
@@ -375,6 +458,16 @@
             const d = new Date(date);
             return d.toISOString().slice(0, 7);
         };
+        
+        function getQuarterMonths(monthId) {
+            if (!monthId) return [];
+            const year = monthId.slice(0, 4);
+            const month = parseInt(monthId.slice(5, 7), 10);
+            if (month <= 3) return [`${year}-01`, `${year}-02`, `${year}-03`];
+            if (month <= 6) return [`${year}-04`, `${year}-05`, `${year}-06`];
+            if (month <= 9) return [`${year}-07`, `${year}-08`, `${year}-09`];
+            return [`${year}-10`, `${year}-11`, `${year}-12`];
+        }
 
         // --- EMPLOYEE CRUD ---
         function openEmployeeModal(employeeDbId = null) {
@@ -511,17 +604,48 @@
             const firstRow = newData[0];
             if (!firstRow) throw new Error("New Excel data is empty.");
 
-            const requiredColumns = ['Employee ID', 'Employee', 'Email', 'Department', 'Date', 'Labor Hours', 'Billable Amount'];
-            const actualColumns = Object.keys(firstRow);
+            // Flexible column mapping
+            const columnMappings = {
+                'employee id': 'employeeId',
+                'employee': 'employeeName',
+                'email': 'email',
+                'department': 'department',
+                'date': 'date',
+                'labor hours': 'hours',
+                'billable amount': 'billable'
+            };
 
-            const columnMap = {};
-            const lowerCaseActualColumns = actualColumns.map(c => c.toLowerCase().trim());
+            // Add all KPI keys to the mappings
+            const optionalKpiKeys = kpis.map(k => k.key);
+            optionalKpiKeys.forEach(key => {
+                columnMappings[key.toLowerCase()] = key;
+            });
 
-            for (const requiredCol of requiredColumns) {
-                const lowerCaseRequired = requiredCol.toLowerCase().trim();
-                const index = lowerCaseActualColumns.indexOf(lowerCaseRequired);
-                if (index === -1) throw new Error(`Missing required column: "${requiredCol}"`);
-                columnMap[requiredCol] = actualColumns[index];
+
+            const actualColumns = Object.keys(firstRow).reduce((acc, col) => {
+                acc[col.toLowerCase().trim()] = col;
+                return acc;
+            }, {});
+            
+            const resolvedColumns = {};
+            for (const key in columnMappings) {
+                if (actualColumns[key]) {
+                    resolvedColumns[columnMappings[key]] = actualColumns[key];
+                }
+            }
+
+            // Check for essential columns
+            const essentialColumns = ['employeeId', 'employeeName', 'date', 'hours', 'billable'];
+            for(const col of essentialColumns) {
+                if(!resolvedColumns[col]) throw new Error(`Missing required column: One of the essential columns like 'Employee ID', 'Date', etc. is missing.`);
+            }
+
+            // Check for missing optional KPI columns and prepare warning
+            const missingKpiColumns = optionalKpiKeys.filter(key => !resolvedColumns[key]);
+            if (missingKpiColumns.length > 0 && missingKpiColumns.length < optionalKpiKeys.length) {
+                setTimeout(() => { 
+                    showUploadNotification(`Warning: Not all KPI columns were found. Missing: ${missingKpiColumns.join(', ')}.`, false, true);
+                }, 1000);
             }
 
             const employeeData = (existingData && existingData.employees) ? existingData.employees.reduce((acc, emp) => {
@@ -531,11 +655,11 @@
             
             const duplicateDatesFound = new Set();
             newData.forEach(row => {
-                const id = row[columnMap['Employee ID']];
+                const id = row[resolvedColumns.employeeId];
                 if (!id || !employeeData[id]) return; 
 
                 let date;
-                const dateValue = row[columnMap['Date']];
+                const dateValue = row[resolvedColumns.date];
                 if (typeof dateValue === 'number') {
                     const excelEpoch = new Date(Date.UTC(1899, 11, 30));
                     date = new Date(excelEpoch.getTime() + dateValue * 86400000);
@@ -558,15 +682,21 @@
             }
 
             newData.forEach(row => {
-                const id = row[columnMap['Employee ID']];
+                const id = row[resolvedColumns.employeeId];
                 if (!id) return;
 
-                if (!employeeData[id]) {
-                    employeeData[id] = { id: id, name: row[columnMap['Employee']], email: row[columnMap['Email']], department: row[columnMap['Department']], daily: [] };
+                 if (!employeeData[id]) {
+                     employeeData[id] = { 
+                        id: id, 
+                        name: row[resolvedColumns.employeeName], 
+                        email: row[resolvedColumns.email] || '', 
+                        department: row[resolvedColumns.department] || 'N/A', 
+                        daily: [] 
+                    };
                 }
 
                 let date;
-                const dateValue = row[columnMap['Date']];
+                const dateValue = row[resolvedColumns.date];
                 if (typeof dateValue === 'number') {
                     const excelEpoch = new Date(Date.UTC(1899, 11, 30));
                     date = new Date(excelEpoch.getTime() + dateValue * 86400000);
@@ -578,9 +708,19 @@
 
                 const newEntry = {
                     date: date.toISOString().split('T')[0],
-                    hours: Number(row[columnMap['Labor Hours']]) || 0,
-                    billable: Number(row[columnMap['Billable Amount']]) || 0
+                    hours: Number(row[resolvedColumns.hours]) || 0,
+                    billable: Number(row[resolvedColumns.billable]) || 0,
                 };
+
+                // Dynamically add all available KPI data
+                optionalKpiKeys.forEach(key => {
+                    if (resolvedColumns[key]) {
+                        const value = row[resolvedColumns[key]];
+                        newEntry[key] = (value !== null && value !== undefined && value !== '') ? Number(value) : null;
+                    } else {
+                        newEntry[key] = null;
+                    }
+                });
                 
                 employeeData[id].daily.push(newEntry);
             });
@@ -932,9 +1072,188 @@
                 selector.appendChild(option);
             });
         }
+        
+        function populateKpiMonthSelector() {
+            const selector = document.getElementById('kpiMonthSelector');
+            const mainMonthSelectorValue = document.getElementById('monthSelector').value;
+            selector.innerHTML = '';
+             if (processedData.monthIds && processedData.monthIds.length > 0) {
+                processedData.monthIds.forEach(monthId => {
+                    const option = document.createElement('option');
+                    option.value = monthId;
+                    option.textContent = new Date(monthId + '-02T00:00:00Z').toLocaleString('default', { month: 'long', year: 'numeric' });
+                    selector.appendChild(option);
+                });
+                selector.value = mainMonthSelectorValue;
+            }
+        }
+
+        // --- PERFORMANCE/KPI VIEW LOGIC ---
+        function populateKpiReferenceTable() {
+            const tableBody = document.getElementById('kpiReferenceTableBody');
+            tableBody.innerHTML = '';
+            kpis.forEach(kpi => {
+                const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium">${kpi.category}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${kpi.measure}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${kpi.target}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${kpi.weight}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function populateKpiEmployeeSelector() {
+            const selector = document.getElementById('kpiEmployeeSelector');
+            selector.innerHTML = '<option value="">-- Select Employee --</option>';
+            if (processedData.employees) {
+                processedData.employees.forEach(emp => {
+                    const option = document.createElement('option');
+                    option.value = emp.id;
+                    option.textContent = emp.name;
+                    selector.appendChild(option);
+                });
+            }
+        }
+        
+        function getKpiStatusHtml(targetMet) {
+             return targetMet 
+                ? '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Target Met</span>'
+                : '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Needs Improvement</span>';
+        }
+
+        function getKpiRangeStatusHtml(isMet, isUnder) {
+            if (isMet) {
+                return '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">On Target</span>';
+            }
+            return `<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">${isUnder ? 'Below Target' : 'Above Target'}</span>`;
+        }
+
+        function displayEmployeeKpis(employeeId, monthId, timeFrame = 'monthly') {
+            const container = document.getElementById('employeeKpiContainer');
+            container.innerHTML = ''; // Clear previous data
+
+            if (!employeeId || !monthId) {
+                container.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center py-8">Select an employee and ensure data is loaded to view performance analysis.</p>`;
+                return;
+            }
+
+            const employee = processedData.employees.find(emp => emp.id == employeeId);
+            if (!employee) return;
+
+            let relevantEntries = [];
+            if (timeFrame === 'quarterly') {
+                const quarterMonths = getQuarterMonths(monthId);
+                relevantEntries = employee.daily.filter(d => quarterMonths.includes(getMonthId(d.date)));
+            } else { // monthly
+                relevantEntries = employee.daily.filter(d => getMonthId(d.date) === monthId);
+            }
+            
+            // --- KPI Calculations ---
+            const kpiValues = {};
+            
+            // Special handling for billableHours, which is a sum of 'hours', not a distinct metric from the file.
+            kpiValues['billableHours'] = relevantEntries.reduce((sum, entry) => sum + (entry.hours || 0), 0);
+            
+            kpis.forEach(kpi => {
+                // Skip billableHours as it's already calculated
+                if (kpi.key === 'billableHours') return;
+
+                const entries = relevantEntries.map(d => d[kpi.key]).filter(v => v !== null && v !== undefined);
+                
+                // Check if there's any data for this KPI
+                if (entries.length === 0) {
+                    kpiValues[kpi.key] = null;
+                    return;
+                }
+
+                if (['partsDelay', 'toolLoss', 'trainingHours'].includes(kpi.key)) { // SUM KPIs
+                     kpiValues[kpi.key] = entries.reduce((a, b) => a + b, 0);
+                } else { // AVERAGE KPIs
+                    kpiValues[kpi.key] = entries.reduce((a, b) => a + b, 0) / entries.length;
+                }
+            });
+
+            const kpisByCategory = kpis.reduce((acc, kpi) => {
+                if (!acc[kpi.category]) acc[kpi.category] = [];
+                acc[kpi.category].push(kpi);
+                return acc;
+            }, {});
+
+            let html = '';
+            for (const category in kpisByCategory) {
+                html += `<div class="mb-6"><h4 class="font-medium text-md text-gray-800 dark:text-gray-200 mb-3">${category}</h4>`;
+                html += '<ul class="space-y-3">';
+
+                kpisByCategory[category].forEach(kpi => {
+                    let actualValue = 'N/A';
+                    let statusHtml = '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">No Data</span>';
+                    const value = kpiValues[kpi.key];
+                    let targetMet = false;
+
+                    if (value !== null && !isNaN(value)) {
+                        switch(kpi.key) {
+                            case 'billableHours':
+                                actualValue = `${value.toFixed(2)} hrs`;
+                                const monthlyTargetHours = 140;
+                                const targetHours = timeFrame === 'quarterly' ? monthlyTargetHours * 3 : monthlyTargetHours;
+                                targetMet = value >= targetHours;
+                                statusHtml = getKpiStatusHtml(targetMet);
+                                break;
+                            case 'fixRate': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 90; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'reworkRate': actualValue = `${value.toFixed(2)}%`; targetMet = value <= 5; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'jobsPerShift': actualValue = `${value.toFixed(2)} jobs`; targetMet = value >= 4 && value <= 6; statusHtml = getKpiRangeStatusHtml(targetMet, value < 4); break;
+                            case 'completionTime': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 90; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'docAccuracy': actualValue = `${value.toFixed(2)}%`; targetMet = value === 100; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'submitTime': actualValue = `${value.toFixed(2)} hrs`; targetMet = value <= 1; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'toolLoss': actualValue = `${value} incidents`; targetMet = value === 0; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'equipChecks': actualValue = `${value.toFixed(2)}%`; targetMet = value === 100; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'inventoryMatch': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 95; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'onTimeArrival': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 95; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'jobsInWindow': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 90; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'travelTime': actualValue = `${value.toFixed(2)}%`; targetMet = value < 30; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'packingAccuracy': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 98; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'partsDelay': actualValue = `${value} delays`; targetMet = value <= 2; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'partsPrepTime': actualValue = `${value.toFixed(2)} mins`; targetMet = value <= 15; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'partsChecklist': actualValue = `${value.toFixed(2)}%`; targetMet = value === 100; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'trainingHours': 
+                                actualValue = `${value} hrs`; 
+                                const quarterlyTarget = 8;
+                                const monthlyTarget = quarterlyTarget / 3;
+                                targetMet = timeFrame === 'quarterly' ? value >= quarterlyTarget : value >= monthlyTarget;
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'upsellConversion': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 30; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'upsellRevenue': actualValue = `$${value.toFixed(2)}`; statusHtml = '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Manual Review</span>'; break;
+                            case 'certifications': actualValue = `${value}`; statusHtml = '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Manual Review</span>'; break;
+                        }
+                    }
+
+                    html += `
+                        <li class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">${kpi.measure}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Target: ${kpi.target}</p>
+                                </div>
+                                <div class="text-right flex-shrink-0 ml-4">
+                                     <p class="text-sm font-semibold text-gray-900 dark:text-white">${actualValue}</p>
+                                     ${statusHtml}
+                                </div>
+                            </div>
+                        </li>
+                    `;
+                });
+                html += '</ul></div>';
+            }
+            container.innerHTML = html;
+        }
+
 
         function showView(viewId) {
-            const pageTitles = { dashboardView: 'Dashboard Overview', employeeTableView: 'Employees', employeeProfileView: 'Employee Profile', reportsView: 'Reports', settingsView: 'Settings' };
+            const pageTitles = { dashboardView: 'Dashboard Overview', employeeTableView: 'Employees', employeeProfileView: 'Employee Profile', performanceView: 'Performance', reportsView: 'Reports', settingsView: 'Settings' };
             document.getElementById('pageTitle').textContent = pageTitles[viewId] || 'Dashboard';
             views.forEach(view => view.classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
@@ -943,10 +1262,22 @@
             if(viewId === 'reportsView') {
                 generateReports();
             }
+            if(viewId === 'performanceView') {
+                document.querySelectorAll('#kpiTimeFrameSelector button').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.value === 'monthly');
+                });
+                populateKpiMonthSelector();
+                populateKpiEmployeeSelector();
+                const selectedEmployee = document.getElementById('kpiEmployeeSelector').value;
+                const selectedMonth = document.getElementById('kpiMonthSelector').value;
+                displayEmployeeKpis(selectedEmployee, selectedMonth, 'monthly');
+            }
         }
 
         // --- UI INITIALIZATION & EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', async function() {
+            populateKpiReferenceTable();
+
             const chartOptions = { responsive: true, maintainAspectRatio: false };
             const timeScaleOptions = { ...chartOptions, scales: { x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MMM d' } } } };
 
@@ -1037,7 +1368,45 @@
                 }
             });
 
-            document.getElementById('monthSelector').addEventListener('change', (e) => updateDashboard(e.target.value));
+            document.getElementById('monthSelector').addEventListener('change', (e) => {
+                updateDashboard(e.target.value)
+                const kpiMonthSelector = document.getElementById('kpiMonthSelector');
+                if (kpiMonthSelector) {
+                    kpiMonthSelector.value = e.target.value;
+                }
+                if (!document.getElementById('performanceView').classList.contains('hidden')) {
+                     const selectedEmployee = document.getElementById('kpiEmployeeSelector').value;
+                     const selectedTimeFrame = document.querySelector('#kpiTimeFrameSelector .kpi-time-btn.active')?.dataset.value || 'monthly';
+                     displayEmployeeKpis(selectedEmployee, e.target.value, selectedTimeFrame);
+                }
+            });
+            
+            document.getElementById('kpiEmployeeSelector').addEventListener('change', (e) => {
+                 const selectedMonth = document.getElementById('kpiMonthSelector').value;
+                 const selectedTimeFrame = document.querySelector('#kpiTimeFrameSelector .kpi-time-btn.active')?.dataset.value || 'monthly';
+                 displayEmployeeKpis(e.target.value, selectedMonth, selectedTimeFrame);
+            });
+            
+            document.getElementById('kpiMonthSelector').addEventListener('change', (e) => {
+                 const selectedEmployee = document.getElementById('kpiEmployeeSelector').value;
+                 const selectedTimeFrame = document.querySelector('#kpiTimeFrameSelector .kpi-time-btn.active')?.dataset.value || 'monthly';
+                 displayEmployeeKpis(selectedEmployee, e.target.value, selectedTimeFrame);
+            });
+
+            const kpiTimeFrameSelector = document.getElementById('kpiTimeFrameSelector');
+            kpiTimeFrameSelector.addEventListener('click', (e) => {
+                const button = e.target.closest('.kpi-time-btn');
+                if (button) {
+                    kpiTimeFrameSelector.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    const selectedEmployee = document.getElementById('kpiEmployeeSelector').value;
+                    const selectedMonth = document.getElementById('kpiMonthSelector').value;
+                    const selectedTimeFrame = button.dataset.value;
+                    displayEmployeeKpis(selectedEmployee, selectedMonth, selectedTimeFrame);
+                }
+            });
+
             document.getElementById('employeeMonthSelector').addEventListener('change', (e) => {
                 const employeeId = document.getElementById('employeeProfileView').dataset.currentEmployeeId;
                 const employee = processedData.employees.find(emp => emp.id == employeeId);
@@ -1192,3 +1561,5 @@
     </script>
 </body>
 </html>
+
+
