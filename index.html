@@ -283,7 +283,7 @@
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-white">Account Settings</h3>
                             <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Last Sign-In: <span id="lastLoginTime" class="font-medium text-gray-800 dark:text-white"></span></p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.5</span></p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.5.1</span></p>
                             </div>
                             <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <h4 class="font-medium text-gray-800 dark:text-white">Change Password</h4>
@@ -1190,50 +1190,175 @@
                 kpisByCategory[category].forEach(kpi => {
                     let actualValue = 'N/A';
                     let statusHtml = '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">No Data</span>';
+                    let progressBarHtml = '';
                     const value = kpiValues[kpi.key];
                     let targetMet = false;
 
                     if (value !== null && !isNaN(value)) {
+                        let progressPercent = 0;
+                        let progressColor = 'bg-gray-400';
+
                         switch(kpi.key) {
                             case 'billableHours':
                                 actualValue = `${value.toFixed(2)} hrs`;
                                 const monthlyTargetHours = 140;
                                 const targetHours = timeFrame === 'quarterly' ? monthlyTargetHours * 3 : monthlyTargetHours;
                                 targetMet = value >= targetHours;
+                                progressPercent = Math.min((value / targetHours) * 100, 100);
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-yellow-500';
                                 statusHtml = getKpiStatusHtml(targetMet);
                                 break;
-                            case 'fixRate': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 90; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'reworkRate': actualValue = `${value.toFixed(2)}%`; targetMet = value <= 5; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'jobsPerShift': actualValue = `${value.toFixed(2)} jobs`; targetMet = value >= 4 && value <= 6; statusHtml = getKpiRangeStatusHtml(targetMet, value < 4); break;
-                            case 'completionTime': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 90; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'docAccuracy': actualValue = `${value.toFixed(2)}%`; targetMet = value === 100; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'submitTime': actualValue = `${value.toFixed(2)} hrs`; targetMet = value <= 1; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'toolLoss': actualValue = `${value} incidents`; targetMet = value === 0; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'equipChecks': actualValue = `${value.toFixed(2)}%`; targetMet = value === 100; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'inventoryMatch': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 95; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'onTimeArrival': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 95; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'jobsInWindow': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 90; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'travelTime': actualValue = `${value.toFixed(2)}%`; targetMet = value < 30; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'packingAccuracy': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 98; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'partsDelay': actualValue = `${value} delays`; targetMet = value <= 2; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'partsPrepTime': actualValue = `${value.toFixed(2)} mins`; targetMet = value <= 15; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'partsChecklist': actualValue = `${value.toFixed(2)}%`; targetMet = value === 100; statusHtml = getKpiStatusHtml(targetMet); break;
+                            case 'fixRate': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value >= 90; 
+                                progressPercent = Math.min((value / 90) * 100, 100);
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-red-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'reworkRate': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value <= 5; 
+                                progressPercent = Math.max(0, 100 - ((value / 5) * 100));
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-red-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'jobsPerShift': 
+                                actualValue = `${value.toFixed(2)} jobs`; 
+                                targetMet = value >= 4 && value <= 6; 
+                                progressPercent = (value / 6) * 100;
+                                progressColor = targetMet ? 'bg-green-500' : (value < 4 ? 'bg-red-500' : 'bg-yellow-500');
+                                statusHtml = getKpiRangeStatusHtml(targetMet, value < 4); 
+                                break;
+                            case 'completionTime': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value >= 90; 
+                                progressPercent = Math.min((value / 90) * 100, 100);
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-red-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'docAccuracy': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value === 100; 
+                                progressPercent = value;
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-yellow-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'submitTime': 
+                                actualValue = `${value.toFixed(2)} hrs`; 
+                                targetMet = value <= 1; 
+                                progressPercent = Math.max(0, 100 - (value * 100));
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-red-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'toolLoss': 
+                                actualValue = `${value} incidents`; 
+                                targetMet = value === 0; 
+                                progressPercent = value === 0 ? 100 : 0;
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-red-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'equipChecks': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value === 100; 
+                                progressPercent = value;
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-yellow-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'inventoryMatch': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value >= 95; 
+                                progressPercent = (value/95) * 100;
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-yellow-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'onTimeArrival': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value >= 95; 
+                                progressPercent = (value/95) * 100;
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-red-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'jobsInWindow': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value >= 90; 
+                                progressPercent = (value/90) * 100;
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-yellow-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'travelTime': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value < 30; 
+                                progressPercent = Math.max(0, 100 - ((value/30)*100));
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-red-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'packingAccuracy': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value >= 98; 
+                                progressPercent = (value/98)*100;
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-yellow-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'partsDelay': 
+                                actualValue = `${value} delays`; 
+                                targetMet = value <= 2; 
+                                progressPercent = Math.max(0, 100 - ((value/2)*100));
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-red-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'partsPrepTime': 
+                                actualValue = `${value.toFixed(2)} mins`; 
+                                targetMet = value <= 15; 
+                                progressPercent = Math.max(0, 100 - ((value/15)*100));
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-yellow-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'partsChecklist': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value === 100; 
+                                progressPercent = value;
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-yellow-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
                             case 'trainingHours': 
                                 actualValue = `${value} hrs`; 
                                 const quarterlyTarget = 8;
                                 const monthlyTarget = quarterlyTarget / 3;
-                                targetMet = timeFrame === 'quarterly' ? value >= quarterlyTarget : value >= monthlyTarget;
+                                const currentTarget = timeFrame === 'quarterly' ? quarterlyTarget : monthlyTarget;
+                                targetMet = value >= currentTarget;
+                                progressPercent = Math.min((value / currentTarget) * 100, 100);
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-yellow-500';
                                 statusHtml = getKpiStatusHtml(targetMet); 
                                 break;
-                            case 'upsellConversion': actualValue = `${value.toFixed(2)}%`; targetMet = value >= 30; statusHtml = getKpiStatusHtml(targetMet); break;
-                            case 'upsellRevenue': actualValue = `$${value.toFixed(2)}`; statusHtml = '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Manual Review</span>'; break;
-                            case 'certifications': actualValue = `${value}`; statusHtml = '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Manual Review</span>'; break;
+                            case 'upsellConversion': 
+                                actualValue = `${value.toFixed(2)}%`; 
+                                targetMet = value >= 30; 
+                                progressPercent = Math.min((value / 30) * 100, 100);
+                                progressColor = targetMet ? 'bg-green-500' : 'bg-yellow-500';
+                                statusHtml = getKpiStatusHtml(targetMet); 
+                                break;
+                            case 'upsellRevenue': 
+                                actualValue = `$${value.toFixed(2)}`; 
+                                statusHtml = '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Manual Review</span>'; 
+                                break;
+                            case 'certifications': 
+                                actualValue = `${value}`; 
+                                statusHtml = '<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Manual Review</span>'; 
+                                break;
+                        }
+
+                        if (progressPercent > 0) {
+                             progressBarHtml = `
+                                <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 mt-2">
+                                    <div class="${progressColor} h-2 rounded-full" style="width: ${progressPercent}%"></div>
+                                </div>
+                            `;
                         }
                     }
 
                     html += `
                         <li class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-start justify-between">
                                 <div>
                                     <p class="text-sm font-medium text-gray-900 dark:text-white">${kpi.measure}</p>
                                     <p class="text-xs text-gray-500 dark:text-gray-400">Target: ${kpi.target}</p>
@@ -1243,6 +1368,7 @@
                                      ${statusHtml}
                                 </div>
                             </div>
+                            ${progressBarHtml}
                         </li>
                     `;
                 });
@@ -1561,5 +1687,6 @@
     </script>
 </body>
 </html>
+
 
 
