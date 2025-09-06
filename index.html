@@ -335,7 +335,7 @@
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-white">Account Settings</h3>
                             <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Last Sign-In: <span id="lastLoginTime" class="font-medium text-gray-800 dark:text-white"></span></p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.6.1</span></p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.6.2</span></p>
                             </div>
                             <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <h4 class="font-medium text-gray-800 dark:text-white">Change Password</h4>
@@ -409,7 +409,7 @@
     <script type="module">
         // --- Firebase Imports ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // --- Firebase Configuration ---
@@ -438,6 +438,8 @@
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
         let notificationTimeout;
+        let currentSessionToken = null;
+        let sessionListenerUnsubscribe = null;
 
         // --- KPI Data ---
         const kpis = [
@@ -1728,17 +1730,51 @@
                 }
             });
 
-            logoutButton.addEventListener('click', () => {
+            logoutButton.addEventListener('click', async () => {
+                if (auth.currentUser) {
+                    const userSessionDocRef = doc(db, "userSessions", auth.currentUser.uid);
+                    // By updating the token, we invalidate sessions on other devices.
+                    await setDoc(userSessionDocRef, { token: crypto.randomUUID() });
+                }
                 signOut(auth);
             });
 
             onAuthStateChanged(auth, async (user) => {
+                // Clean up any existing session listener
+                if (sessionListenerUnsubscribe) {
+                    sessionListenerUnsubscribe();
+                    sessionListenerUnsubscribe = null;
+                }
+
                 if (user) {
                     // User is signed in
                     loginView.classList.add('hidden');
                     appView.classList.remove('hidden');
                     document.getElementById('userEmail').textContent = user.email;
                     document.getElementById('lastLoginTime').textContent = new Date(user.metadata.lastSignInTime).toLocaleString();
+
+                    // --- Multi-Device Logout Setup ---
+                    const userSessionDocRef = doc(db, "userSessions", user.uid);
+                    
+                    // 1. Listen for changes to the session document.
+                    sessionListenerUnsubscribe = onSnapshot(userSessionDocRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            const sessionToken = docSnap.data().token;
+                            // 2. If the token in Firestore doesn't match this browser's session token,
+                            //    it means a login/logout happened elsewhere. Force a logout here.
+                            if (currentSessionToken && sessionToken !== currentSessionToken) {
+                                console.log("Session invalidated from another device. Logging out.");
+                                signOut(auth);
+                            }
+                        }
+                    });
+
+                    // 3. Generate a unique token for THIS browser session and save it.
+                    currentSessionToken = crypto.randomUUID();
+                    await setDoc(userSessionDocRef, { token: currentSessionToken });
+                    
+                    // --- End Multi-Device Logout Setup ---
+
 
                     try {
                         const docSnap = await getDoc(dataDocRef);
@@ -1764,6 +1800,7 @@
                     showView('dashboardView');
                 } else {
                     // User is signed out
+                    currentSessionToken = null; // Clear session token on logout
                     loginView.classList.remove('hidden');
                     appView.classList.add('hidden');
                     processedData = {};
