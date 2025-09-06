@@ -29,7 +29,7 @@
     <style>
         /* --- Base Styles --- */
         body {
-        	font-family: -apple-system, BlinkMacSystemFont, "Inter", "Arial", sans-serif;
+        	font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Arial", sans-serif;
         }
 
         /* --- Animations --- */
@@ -193,15 +193,15 @@
                         <div class="flex justify-end mb-4">
                             <select id="monthSelector" class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"></select>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="totalEmployeesLabel" class="text-gray-500 dark:text-gray-400 text-sm">Total Employees</p><h3 id="totalEmployees" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div><div class="p-3 rounded-full bg-primary bg-opacity-10 text-primary"><i class="fas fa-users text-xl"></i></div></div></div>
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="totalHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Total Hours</p><h3 id="totalHours" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div><div class="p-3 rounded-full bg-secondary bg-opacity-10 text-secondary"><i class="fas fa-clock text-xl"></i></div></div></div>
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="totalBillableLabel" class="text-gray-500 dark:text-gray-400 text-sm">Total Billable</p><h3 id="totalBillable" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">$0</h3></div><div class="p-3 rounded-full bg-info bg-opacity-10 text-info"><i class="fas fa-dollar-sign text-xl"></i></div></div></div>
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="overtimeHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Overtime Hours</p><h3 id="overtimeHours" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div><div class="p-3 rounded-full bg-danger bg-opacity-10 text-danger"><i class="fas fa-exclamation-triangle text-xl"></i></div></div></div>
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+                            <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="totalEmployeesLabel" class="text-gray-500 dark:text-gray-400 text-sm">Total Employees</p><h3 id="totalEmployees" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div><div class="p-3 rounded-full bg-primary bg-opacity-10 text-primary hidden sm:block"><i class="fas fa-users text-xl"></i></div></div></div>
+                            <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="totalHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Total Hours</p><h3 id="totalHours" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div><div class="p-3 rounded-full bg-secondary bg-opacity-10 text-secondary hidden sm:block"><i class="fas fa-clock text-xl"></i></div></div></div>
+                            <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="totalBillableLabel" class="text-gray-500 dark:text-gray-400 text-sm">Total Billable</p><h3 id="totalBillable" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">$0</h3></div><div class="p-3 rounded-full bg-info bg-opacity-10 text-info hidden sm:block"><i class="fas fa-dollar-sign text-xl"></i></div></div></div>
+                            <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm"><div class="flex items-center justify-between"><div><p id="overtimeHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Overtime Hours</p><h3 id="overtimeHours" class="text-2xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div><div class="p-3 rounded-full bg-danger bg-opacity-10 text-danger hidden sm:block"><i class="fas fa-exclamation-triangle text-xl"></i></div></div></div>
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Daily Hours Trend</h3><div class="chart-container"><canvas id="monthlyTrendChart"></canvas></div></div>
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                            <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm"><h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Daily Hours Trend</h3><div class="chart-container"><canvas id="monthlyTrendChart"></canvas></div></div>
+                            <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm">
                                 <h3 id="leaderboardTitle" class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Daily Hours Leaderboard</h3>
                                 <ul id="leaderboardList" class="space-y-3">
                                     <!-- Leaderboard items will be dynamically inserted here -->
@@ -222,9 +222,9 @@
                                     <thead class="bg-gray-50 dark:bg-gray-700">
                                         <tr>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Employee</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden sm:table-cell">Department</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden md:table-cell">Department</th>
                                             <th id="employeeTableHoursHeader" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Hours</th>
-                                            <th id="employeeTableBillableHeader" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden md:table-cell">Billable</th>
+                                            <th id="employeeTableBillableHeader" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden lg:table-cell">Billable</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
                                         </tr>
                                     </thead>
@@ -241,16 +241,16 @@
                                <button id="backToEmployeeList" class="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i></button>
                                <h2 id="employeeNameTitle" class="text-2xl font-bold text-gray-800 dark:text-white">Employee Profile</h2>
                             </div>
-                             <div class="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                                <button id="editProfileBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm flex-grow sm:flex-grow-0"><i class="fas fa-edit mr-2"></i>Edit</button>
-                                <button id="deleteProfileBtn" class="bg-danger text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm flex-grow sm:flex-grow-0"><i class="fas fa-trash mr-2"></i>Delete</button>
-                                <select id="employeeMonthSelector" class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white w-full sm:w-auto mt-2 sm:mt-0"></select>
+                             <div class="flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                                <button id="editProfileBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm w-full sm:w-auto"><i class="fas fa-edit mr-2"></i>Edit</button>
+                                <button id="deleteProfileBtn" class="bg-danger text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm w-full sm:w-auto"><i class="fas fa-trash mr-2"></i>Delete</button>
+                                <select id="employeeMonthSelector" class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white w-full sm:w-auto"></select>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div class="lg:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><div class="flex flex-col items-center text-center"><h3 id="employeeProfileName" class="text-xl font-bold text-gray-800 dark:text-white">-</h3><p id="employeeProfileDept" class="text-gray-600 dark:text-gray-400 mb-4">-</p><div class="w-full border-t border-gray-200 dark:border-gray-700 pt-4 text-left text-sm"><div class="flex justify-between py-1"><span class="text-gray-500 dark:text-gray-400">Employee ID</span><span id="employeeProfileId" class="font-medium text-gray-900 dark:text-white">-</span></div><div class="flex justify-between py-1"><span class="text-gray-500 dark:text-gray-400">Email</span><span id="employeeProfileEmail" class="font-medium text-gray-900 dark:text-white truncate">-</span></div></div></div></div>
                             <div class="lg:col-span-2 space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><p id="employeeHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Hours</p><h3 id="employeeHoursThisMonth" class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div>
                                     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><p id="employeeBillableLabel" class="text-gray-500 dark:text-gray-400 text-sm">Billable</p><h3 id="employeeBillableThisMonth" class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">$0</h3></div>
                                     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"><p id="employeeAvgHoursLabel" class="text-gray-500 dark:text-gray-400 text-sm">Avg Daily Hours</p><h3 id="employeeAvgHoursThisMonth" class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">0</h3></div>
@@ -335,7 +335,7 @@
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-white">Account Settings</h3>
                             <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Last Sign-In: <span id="lastLoginTime" class="font-medium text-gray-800 dark:text-white"></span></p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.6</span></p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.6.1</span></p>
                             </div>
                             <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <h4 class="font-medium text-gray-800 dark:text-white">Change Password</h4>
@@ -861,9 +861,9 @@
                         <div class="text-sm font-medium text-gray-900 dark:text-white">${emp.name}</div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">${emp.email}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap hidden sm:table-cell"><div class="text-sm text-gray-900 dark:text-white">${emp.department}</div></td>
+                    <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell"><div class="text-sm text-gray-900 dark:text-white">${emp.department}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">${emp.totalHours.toFixed(2)}</div></td>
-                    <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell"><div class="text-sm text-gray-900 dark:text-white">$${emp.totalBillable.toLocaleString(undefined, {minimumFractionDigits: 2})}</div></td>
+                    <td class="px-6 py-4 whitespace-nowrap hidden lg:table-cell"><div class="text-sm text-gray-900 dark:text-white">$${emp.totalBillable.toLocaleString(undefined, {minimumFractionDigits: 2})}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button class="edit-btn text-primary hover:text-indigo-700 mr-3" data-id="${emp.id}"><i class="fas fa-edit"></i></button>
                         <button class="delete-btn text-danger hover:text-red-700" data-id="${emp.id}"><i class="fas fa-trash"></i></button>
@@ -1774,3 +1774,4 @@
     </script>
 </body>
 </html>
+
