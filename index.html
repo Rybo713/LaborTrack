@@ -311,9 +311,17 @@
                     <!-- Reports View -->
                     <div id="reportsView" class="view-container hidden fade-in">
                         <div class="space-y-8">
+                            <!-- Weekday Focused Report -->
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                                <h3 class="font-semibold text-lg text-gray-900 dark:text-white mb-4">Semi-Monthly Weekday Performance Report (1st-15th &amp; 16th-EOM)</h3>
+                                <div id="weekdayReportContainer" class="overflow-x-auto">
+                                    <p class="text-gray-500 dark:text-gray-400">Please select a month from the dashboard to generate this report.</p>
+                                </div>
+                            </div>
+
                             <!-- Monthly Report -->
                             <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
-                                <h3 class="font-semibold text-lg text-gray-900 dark:text-white mb-4">Monthly Average Hours Report</h3>
+                                <h3 class="font-semibold text-lg text-gray-900 dark:text-white mb-4">Monthly Average Hours Report (All Days)</h3>
                                 <div id="monthlyReportContainer" class="overflow-x-auto">
                                     <p class="text-gray-500 dark:text-gray-400">Please select a month from the dashboard and ensure all days are imported to generate this report.</p>
                                 </div>
@@ -329,13 +337,14 @@
                         </div>
                     </div>
 
+
                     <!-- Settings View -->
                     <div id="settingsView" class="view-container hidden fade-in">
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-white">Account Settings</h3>
                             <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Last Sign-In: <span id="lastLoginTime" class="font-medium text-gray-800 dark:text-white"></span></p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.6.2</span></p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Version: <span class="font-medium text-gray-800 dark:text-white">1.7</span></p>
                             </div>
                             <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <h4 class="font-medium text-gray-800 dark:text-white">Change Password</h4>
@@ -1010,6 +1019,10 @@
         function generateReports() {
             const monthId = document.getElementById('monthSelector').value;
             if (!monthId || !processedData.employees) {
+                // Clear report containers if no data
+                document.getElementById('weekdayReportContainer').innerHTML = `<p class="text-gray-500 dark:text-gray-400">Please select a month from the dashboard to generate this report.</p>`;
+                document.getElementById('monthlyReportContainer').innerHTML = `<p class="text-gray-500 dark:text-gray-400">Please select a month from the dashboard to generate this report.</p>`;
+                document.getElementById('biWeeklyReportContainer').innerHTML = `<p class="text-gray-500 dark:text-gray-400">Please select a month to generate this report.</p>`;
                 return;
             }
 
@@ -1017,6 +1030,83 @@
             const month = parseInt(monthId.split('-')[1]) - 1;
             const monthName = new Date(year, month).toLocaleString('default', { month: 'short' });
             const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // --- Bi-Weekly Weekday Performance Report (Using 1-15 and 16-EOM periods) ---
+            const weekdayReportContainer = document.getElementById('weekdayReportContainer');
+            weekdayReportContainer.innerHTML = ''; // Clear previous report
+
+            const period1Data = {};
+            const period2Data = {};
+
+            processedData.employees.forEach(emp => {
+                const monthEntries = emp.daily.filter(d => getMonthId(d.date) === monthId);
+                
+                // Initialize stats for both periods
+                period1Data[emp.id] = { name: emp.name, totalHours: 0, weekendHours: 0, weekdayHours: 0, weekdayCount: 0 };
+                period2Data[emp.id] = { name: emp.name, totalHours: 0, weekendHours: 0, weekdayHours: 0, weekdayCount: 0 };
+
+                monthEntries.forEach(d => {
+                    const entryDate = new Date(d.date + 'T00:00:00Z');
+                    const dayOfMonth = entryDate.getUTCDate();
+                    const dayOfWeek = entryDate.getUTCDay(); // Sunday = 0, Saturday = 6
+                    
+                    const targetPeriod = dayOfMonth <= 15 ? period1Data[emp.id] : period2Data[emp.id];
+
+                    targetPeriod.totalHours += d.hours;
+
+                    if (dayOfWeek === 0 || dayOfWeek === 6) { // Weekend
+                        targetPeriod.weekendHours += d.hours;
+                    } else { // Weekday
+                        targetPeriod.weekdayHours += d.hours;
+                        if (d.hours > 0) {
+                            targetPeriod.weekdayCount++;
+                        }
+                    }
+                });
+            });
+
+            const period1Label = `${monthName} 1 - ${monthName} 15`;
+            const period2Label = `${monthName} 16 - ${monthName} ${daysInMonth}`;
+
+            [ {label: period1Label, data: period1Data}, {label: period2Label, data: period2Data} ].forEach(period => {
+                // Check if there is any data for this period to display
+                const hasData = Object.values(period.data).some(empData => empData.totalHours > 0);
+
+                if (hasData) {
+                    let periodTableHtml = `<h4 class="font-semibold text-md text-gray-800 dark:text-gray-200 mt-6 mb-2">${period.label}</h4>`;
+                    periodTableHtml += `
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Employee</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total Hours</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total Weekend Hours</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Avg Weekday Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    `;
+                    
+                    Object.values(period.data).sort((a, b) => a.name.localeCompare(b.name)).forEach(empData => {
+                        const avgWeekdayHours = empData.weekdayCount > 0 ? (empData.weekdayHours / empData.weekdayCount) : 0;
+                        periodTableHtml += `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${empData.name}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${empData.totalHours.toFixed(2)}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${empData.weekendHours.toFixed(2)}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${avgWeekdayHours.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+
+                    periodTableHtml += `</tbody></table>`;
+                    weekdayReportContainer.innerHTML += periodTableHtml;
+                }
+            });
+
+            if (weekdayReportContainer.innerHTML === '') {
+                 weekdayReportContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No data available for this month to generate a bi-weekly weekday report.</p>`;
+            }
 
             // Monthly Report
             const monthlyReportContainer = document.getElementById('monthlyReportContainer');
@@ -1811,4 +1901,6 @@
     </script>
 </body>
 </html>
+
+
 
